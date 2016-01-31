@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Text-CSV-Flatten.t
+lib/Text/CSV/Flatten.pm

@@ -1,0 +1,8 @@
+Revision history for Perl extension Text::CSV::Flatten.
+
+0.01  Sun Jan 31 21:08:20 2016
+	- original version; created by h2xs 1.23 with options
+		-XAn Text::CSV::Flatten
+	- Initial functionality; api still subject to change.
+	  It is very likely that in the future, the constructor will only
+	  accept options and the data is passed to another method.
