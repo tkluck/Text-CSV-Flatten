@@ -33,19 +33,19 @@ my $data= {
     },
 };
 
-is(Text::CSV::Flatten->new('calculus.<name>.*.year', data=>$data)->csv . "\n", <<CSV);
+is(Text::CSV::Flatten->new('.calculus.<name>.*.year', data=>$data)->csv . "\n", <<CSV);
 birth,death,name
 1646,1716,Leibniz
 1642,1726,Newton
 CSV
 
-is(Text::CSV::Flatten->new('calculus.*.<event>.year', data=>$data)->csv . "\n", <<CSV);
+is(Text::CSV::Flatten->new('.calculus.*.<event>.year', data=>$data)->csv . "\n", <<CSV);
 Leibniz,Newton,event
 1646,1642,birth
 1716,1726,death
 CSV
 
-is(Text::CSV::Flatten->new('calculus.<name>.*.*', data=>$data)->csv . "\n", <<CSV);
+is(Text::CSV::Flatten->new('.calculus.<name>.*.*', data=>$data)->csv . "\n", <<CSV);
 birth_month,birth_year,death_month,death_year,name
 6,1646,11,1716,Leibniz
 12,1642,3,1726,Newton

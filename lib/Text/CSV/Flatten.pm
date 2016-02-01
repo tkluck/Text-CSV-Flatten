@@ -12,7 +12,11 @@ use Text::CSV::Slurp;
 sub new {
     my ($class, $pattern, %args)= @_;
 
-    $pattern= [ split /\./, $pattern ] if !ref $pattern;
+    $pattern =~ /^\.(.*)$/
+        or die "invalid pattern: <$pattern>";
+    my $p= $1;
+
+    $pattern= [ split /\./, $p ];
 
     my $data= delete $args{data};
     my $self= bless {
