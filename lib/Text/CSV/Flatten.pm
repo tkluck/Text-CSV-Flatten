@@ -10,28 +10,44 @@ use JSON qw/ encode_json /;
 use Text::CSV::Slurp;
 
 sub new {
-    my ($class, %args)= @_;
+    my ($class, $pattern, %args)= @_;
 
-    my ($pattern, $data)= @args{qw/pattern data/};
     $pattern= [ split /\./, $pattern ] if !ref $pattern;
 
-    return bless { pattern => $pattern, data => $data }, $class;
+    my $data= delete $args{data};
+    my $self= bless {
+        pattern     => $pattern,
+        data_matrix => {},
+        %args,
+    }, $class;
+
+    $self->data($data) if $data;
+
+    return $self;
+}
+
+sub data {
+    my ($self, $data)= @_;
+
+    my $data_matrix= $self->{data_matrix};
+
+    my @pattern= @{ $self->{pattern} };
+
+    _recurse_pattern($data, \@pattern, [], [], $data_matrix);
+
+    return $self;
 }
 
 sub records {
     my ($self)= @_;
 
-    my %data_matrix;
-
     my @pattern= @{ $self->{pattern} };
-
-    _recurse_pattern($self->{data}, \@pattern, [], [], \%data_matrix);
-
-    my @records;
+    my $data_matrix= $self->{data_matrix};
     my @index_column_names= map { /^<(.*)>$/ ? $1 : () } @pattern;
 
-    for my $index (sort keys %data_matrix) {
-        my $data= $data_matrix{$index};
+    my @records;
+    for my $index (sort keys %$data_matrix) {
+        my $data= $data_matrix->{$index};
         my %record;
         @record{@index_column_names}= split /\0/, $index;
         @record{keys %$data}= values %$data;
