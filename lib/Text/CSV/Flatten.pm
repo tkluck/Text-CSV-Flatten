@@ -20,9 +20,9 @@ sub new {
 
     my $data= delete $args{data};
     my $self= bless {
+        %args,
         pattern     => $pattern,
         data_matrix => {},
-        %args,
     }, $class;
 
     $self->data($data) if $data;
@@ -34,7 +34,6 @@ sub data {
     my ($self, $data)= @_;
 
     my $data_matrix= $self->{data_matrix};
-
     my @pattern= @{ $self->{pattern} };
 
     $self->_recurse_pattern($data, \@pattern, [], []);
