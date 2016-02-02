@@ -9,6 +9,8 @@ our $VERSION = '0.01';
 use JSON qw/ encode_json /;
 use Text::CSV;
 
+my @KNOWN_ARGS= qw/ column_name /;
+
 sub new {
     my ($class, $pattern, %args)= @_;
 
@@ -19,8 +21,16 @@ sub new {
     $pattern= [ split /\./, $p ];
 
     my $data= delete $args{data};
+
+    my %known_args;
+    @known_args{@KNOWN_ARGS}= delete @args{@KNOWN_ARGS};
+    if(keys %args) {
+        my $unknown_keys= join ",", keys %args;
+        die "Unknown arguments: $unknown_keys";
+    }
+
     my $self= bless {
-        %args,
+        %known_args,
         pattern     => $pattern,
         data_matrix => {},
     }, $class;
@@ -61,15 +71,18 @@ sub csv {
         push @records, \%record;
     }
     my @column_names= sort keys %column_names;
+    my $render_header= scalar grep $_, @column_names;
 
     my $csv= Text::CSV->new();
 
     my @result;
-    if(my $status= $csv->combine(@column_names)) {
-        push @result, $csv->string();
-    } else {
-        my $error= $csv->error_input();
-        die "Error while rendering header row: $error";
+    if($render_header) {
+        if(my $status= $csv->combine(@column_names)) {
+            push @result, $csv->string();
+        } else {
+            my $error= $csv->error_input();
+            die "Error while rendering header row: $error";
+        }
     }
     for my $record (@records) {
         my @columns= @$record{@column_names};
@@ -131,7 +144,10 @@ sub _recurse_pattern {
         my $cell_value= ref $cur_data
                       ? encode_json($cur_data)
                       : $cur_data;
-        $self->{data_matrix}{join("\0", @$index_prefix)}{join("_", @$column_name_prefix)}= $cell_value;
+        my $column_name= @$column_name_prefix
+                       ? join("_", @$column_name_prefix)
+                       : $self->{column_name} || '';
+        $self->{data_matrix}{join("\0", @$index_prefix)}{$column_name}= $cell_value;
     }
 }
 
