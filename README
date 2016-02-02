@@ -44,7 +44,7 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
   JSON
-  Text::CSV::Slurp
+  Text::CSV
 
 COPYRIGHT AND LICENCE
 

@@ -7,7 +7,7 @@ use warnings;
 our $VERSION = '0.01';
 
 use JSON qw/ encode_json /;
-use Text::CSV::Slurp;
+use Text::CSV;
 
 sub new {
     my ($class, $pattern, %args)= @_;
@@ -37,12 +37,12 @@ sub data {
 
     my @pattern= @{ $self->{pattern} };
 
-    _recurse_pattern($data, \@pattern, [], [], $data_matrix);
+    $self->_recurse_pattern($data, \@pattern, [], []);
 
     return $self;
 }
 
-sub records {
+sub csv {
     my ($self)= @_;
 
     my @pattern= @{ $self->{pattern} };
@@ -50,20 +50,39 @@ sub records {
     my @index_column_names= map { /^<(.*)>$/ ? $1 : () } @pattern;
 
     my @records;
+    my %column_names;
     for my $index (sort keys %$data_matrix) {
         my $data= $data_matrix->{$index};
         my %record;
         @record{@index_column_names}= split /\0/, $index;
         @record{keys %$data}= values %$data;
+
+        @column_names{keys %record}= (1) x keys %record;
+
         push @records, \%record;
     }
-    return \@records;
-}
+    my @column_names= sort keys %column_names;
 
-sub csv {
-    my ($self)= @_;
+    my $csv= Text::CSV->new();
 
-    return Text::CSV::Slurp->create( input => $self->records );
+    my @result;
+    if(my $status= $csv->combine(@column_names)) {
+        push @result, $csv->string();
+    } else {
+        my $error= $csv->error_input();
+        die "Error while rendering header row: $error";
+    }
+    for my $record (@records) {
+        my @columns= @$record{@column_names};
+        if(my $status= $csv->combine(@columns)) {
+            push @result, $csv->string();
+        } else {
+            my $error= $csv->error_input();
+            die "Error while rendering row: $error";
+        }
+    }
+
+    return join "\n", @result;
 }
 
 sub _foreach(&$) {
@@ -85,7 +104,7 @@ sub _foreach(&$) {
 }
 
 sub _recurse_pattern {
-    my ($cur_data, $pattern, $column_name_prefix, $index_prefix, $data_matrix)= @_;
+    my ($self, $cur_data, $pattern, $column_name_prefix, $index_prefix)= @_;
 
     if(@$pattern) {
         my ($p, @p)= @$pattern;
@@ -93,15 +112,15 @@ sub _recurse_pattern {
             if($p eq '*') {
                 _foreach {
                     my ($key, $value)= @_;
-                    _recurse_pattern($value, \@p, [@$column_name_prefix, $key], $index_prefix, $data_matrix);
+                    _recurse_pattern($self, $value, \@p, [@$column_name_prefix, $key], $index_prefix);
                 } $cur_data;
             } elsif($p =~ /^<(.*)>$/) {
                 _foreach {
                     my ($key, $value)= @_;
-                    _recurse_pattern($value, \@p, $column_name_prefix, [@$index_prefix, $key], $data_matrix);
+                    _recurse_pattern($self, $value, \@p, $column_name_prefix, [@$index_prefix, $key]);
                 } $cur_data;
             } else {
-                _recurse_pattern($cur_data->{$p}, \@p, $column_name_prefix, $index_prefix, $data_matrix);
+                _recurse_pattern($self, $cur_data->{$p}, \@p, $column_name_prefix, $index_prefix);
             }
             1;
         } or do {
@@ -113,7 +132,7 @@ sub _recurse_pattern {
         my $cell_value= ref $cur_data
                       ? encode_json($cur_data)
                       : $cur_data;
-        $data_matrix->{join("\0", @$index_prefix)}{join("_", @$column_name_prefix)}= $cell_value;
+        $self->{data_matrix}{join("\0", @$index_prefix)}{join("_", @$column_name_prefix)}= $cell_value;
     }
 }
 
@@ -142,7 +161,7 @@ Some documentation wil come here.
 
 =head1 SEE ALSO
 
-  Text::CSV::Slurp
+  Text::CSV
 
 =head1 AUTHOR
 
