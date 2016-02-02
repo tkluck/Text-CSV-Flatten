@@ -151,7 +151,7 @@ readable, user-specified pattern.
 
   use Text::CSV::Flatten;
   Text::CSV::Flatten->new(
-    pattern => '<index>.*',
+    pattern => '.<index>.*',
     data    => [{ a => 1, b => 2 }, { a => 3, b => 4 }],
   )->csv();
 
