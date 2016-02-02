@@ -132,7 +132,9 @@ sub _recurse_pattern {
                     _recurse_pattern($self, $value, \@p, $column_name_prefix, [@$index_prefix, $key]);
                 } $cur_data;
             } else {
-                _recurse_pattern($self, $cur_data->{$p}, \@p, $column_name_prefix, $index_prefix);
+                if(exists $cur_data->{$p}) {
+                    _recurse_pattern($self, $cur_data->{$p}, \@p, $column_name_prefix, $index_prefix);
+                }
             }
             1;
         } or do {

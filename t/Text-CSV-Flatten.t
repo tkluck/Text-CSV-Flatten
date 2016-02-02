@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 11;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -68,4 +68,13 @@ CSV
 
 is(Text::CSV::Flatten->new('.', data=>$empty_data)->csv . "\n", <<CSV);
 {}
+CSV
+
+is(Text::CSV::Flatten->new('.nonexistent_key', data=>$empty_data)->csv, <<CSV);
+CSV
+
+is(Text::CSV::Flatten->new('.nonexistent_key', column_name=>"value", data=>$empty_data)->csv, <<CSV);
+CSV
+
+is(Text::CSV::Flatten->new('.nonexistent_key.nested', data=>$empty_data)->csv, <<CSV);
 CSV
