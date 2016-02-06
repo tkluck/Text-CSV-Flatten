@@ -66,8 +66,22 @@ sub data {
     my ($self, $data)= @_;
 
     my $data_matrix= $self->{data_matrix};
+    my $pattern_parts= $self->{pattern_parts};
 
-    for my $pattern (@{ $self->{pattern_parts} }) {
+    my @default_column_names;
+    if(my $default_column_name= $self->{column_name}) {
+        if(ref $default_column_name eq 'ARRAY') {
+            @default_column_names= @$default_column_name;
+        } else {
+            @default_column_names= ($self->{column_name}) x @$pattern_parts;
+        }
+    }
+    for my $pattern (@$pattern_parts) {
+        my $has_column_name= scalar grep {
+            $_ eq '*' || /^{(.*)}$/
+        } @$pattern;
+        $self->{_default_column_name}= shift @default_column_names
+            if !$has_column_name;
         $self->_recurse_pattern($data, $pattern, [], []);
     }
 
@@ -121,7 +135,10 @@ sub csv {
 
 sub _foreach(&$) {
     my ($codeblock, $it)= @_;
-    if('ARRAY' eq ref $it) {
+
+    if(!defined $it || !ref $it) {
+        return;
+    } elsif('ARRAY' eq ref $it) {
         for my $i (0 .. @$it - 1) {
             $codeblock->($i, $it->[$i]);
         }
@@ -151,9 +168,14 @@ sub _recurse_pattern {
             } elsif($p =~ /^{(.*)}$/) {
                 my @keys= split ',', $1;
                 for my $key (@keys) {
-                    if(exists $cur_data->{$key}) {
-                        _recurse_pattern($self, $cur_data->{$key}, \@p, [@$column_name_prefix, $key], $index_prefix);
+                    my $recurse_data;
+                    if(ref $cur_data eq 'HASH' && exists $cur_data->{$key}) {
+                        $recurse_data= $cur_data->{$key};
+                    } elsif(ref $cur_data eq 'ARRAY') {
+                        $recurse_data= $cur_data->[$key];
                     }
+                    _recurse_pattern($self, $recurse_data, \@p, [@$column_name_prefix, $key], $index_prefix)
+                        if $recurse_data;
                 }
             } elsif($p =~ /^<(.*)>$/) {
                 _foreach {
@@ -161,9 +183,14 @@ sub _recurse_pattern {
                     _recurse_pattern($self, $value, \@p, $column_name_prefix, [@$index_prefix, $key]);
                 } $cur_data;
             } else {
-                if(exists $cur_data->{$p}) {
-                    _recurse_pattern($self, $cur_data->{$p}, \@p, $column_name_prefix, $index_prefix);
+                my $recurse_data;
+                if(ref $cur_data eq 'HASH' && exists $cur_data->{$p}) {
+                    $recurse_data= $cur_data->{$p};
+                } elsif(ref $cur_data eq 'ARRAY') {
+                    $recurse_data= $cur_data->[$p];
                 }
+                _recurse_pattern($self, $recurse_data, \@p, $column_name_prefix, $index_prefix)
+                    if $recurse_data;
             }
             1;
         } or do {
@@ -177,7 +204,7 @@ sub _recurse_pattern {
                       : $cur_data;
         my $column_name= @$column_name_prefix
                        ? join("_", @$column_name_prefix)
-                       : $self->{column_name} || '';
+                       : $self->{_default_column_name} || '';
         $self->{data_matrix}{join("\0", @$index_prefix)}{$column_name}= $cell_value;
     }
 }

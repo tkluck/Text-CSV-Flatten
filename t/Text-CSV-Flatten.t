@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 17;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -21,6 +21,8 @@ my $data= {
                 year => 1726,
                 month => 3,
             },
+            nationality => "English",
+            apple => "yes",
         },
         Leibniz => {
             birth => {
@@ -31,6 +33,8 @@ my $data= {
                 year => 1716,
                 month => 11,
             },
+            nationality => "German",
+            apple => "no",
         },
     },
 };
@@ -110,3 +114,8 @@ month,who,year
 12,Newton,1642
 CSV
 
+is(Text::CSV::Flatten->new('.calculus.<who>.*.year .calculus.<who>.nationality .calculus.<who>.apple', column_name=>[qw/nationality apple/], data=>$data)->csv . "\n", <<CSV);
+apple,birth,death,nationality,who
+no,1646,1716,German,Leibniz
+yes,1642,1726,English,Newton
+CSV
