@@ -14,12 +14,6 @@ my @KNOWN_ARGS= qw/ column_name /;
 sub new {
     my ($class, $pattern, %args)= @_;
 
-    $pattern =~ /^\.(.*)$/
-        or die "invalid pattern: <$pattern>";
-    my $p= $1;
-
-    $pattern= [ split /\./, $p ];
-
     my $data= delete $args{data};
 
     my %known_args;
@@ -31,13 +25,25 @@ sub new {
 
     my $self= bless {
         %known_args,
-        pattern     => $pattern,
         data_matrix => {},
     }, $class;
 
+    $self->_set_pattern($pattern);
     $self->data($data) if $data;
 
     return $self;
+}
+
+sub _set_pattern {
+    my ($self, $pattern)= @_;
+
+    $pattern =~ /^\.(.*)$/
+        or die "invalid pattern: <$pattern>";
+    my $p= $1;
+
+    $pattern= [ split /\./, $p ];
+
+    $self->{pattern}= $pattern;
 }
 
 sub data {
