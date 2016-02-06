@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 16;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -103,3 +103,10 @@ is(Text::CSV::Flatten->new('.calculus.{Newton,Leibniz}.birth.year', data=>$data)
 Leibniz,Newton
 1646,1642
 CSV
+
+is(Text::CSV::Flatten->new('.calculus.<who>.birth.{year} .calculus.<who>.birth.{month}', data=>$data)->csv . "\n", <<CSV);
+month,who,year
+6,Leibniz,1646
+12,Newton,1642
+CSV
+

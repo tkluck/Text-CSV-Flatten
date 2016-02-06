@@ -35,24 +35,41 @@ sub new {
 }
 
 sub _set_pattern {
-    my ($self, $pattern)= @_;
+    my ($self, $pattern_definition)= @_;
 
-    $pattern =~ /^\.(.*)$/
-        or die "invalid pattern: <$pattern>";
-    my $p= $1;
+    my @pattern_def= split / /, $pattern_definition;
 
-    $pattern= [ split /\./, $p ];
+    my %index_column_names;
+    my @pattern_parts;
+    for my $pattern (@pattern_def) {
+        $pattern =~ /^\.(.*)$/
+            or die "invalid pattern part: <$pattern>";
+        my $p= $1;
+        my @pattern= split /\./, $p;
 
-    $self->{pattern}= $pattern;
+        my @index_column_names= map { /^<(.*)>$/ ? $1 : () } @pattern;
+        $index_column_names{ join("\0", @index_column_names) }= 1;
+
+        push @pattern_parts, \@pattern;
+    }
+
+    if(keys %index_column_names == 1) {
+        $self->{index_column_names}= [ split "\0", (keys %index_column_names)[0] ];
+    } else {
+        die "Invalid pattern: the different pattern chunks have different index columns";
+    }
+
+    $self->{pattern_parts}= \@pattern_parts;
 }
 
 sub data {
     my ($self, $data)= @_;
 
     my $data_matrix= $self->{data_matrix};
-    my @pattern= @{ $self->{pattern} };
 
-    $self->_recurse_pattern($data, \@pattern, [], []);
+    for my $pattern (@{ $self->{pattern_parts} }) {
+        $self->_recurse_pattern($data, $pattern, [], []);
+    }
 
     return $self;
 }
@@ -60,16 +77,15 @@ sub data {
 sub csv {
     my ($self)= @_;
 
-    my @pattern= @{ $self->{pattern} };
     my $data_matrix= $self->{data_matrix};
-    my @index_column_names= map { /^<(.*)>$/ ? $1 : () } @pattern;
+    my $index_column_names= $self->{index_column_names};
 
     my @records;
     my %column_names;
     for my $index (sort keys %$data_matrix) {
         my $data= $data_matrix->{$index};
         my %record;
-        @record{@index_column_names}= split /\0/, $index;
+        @record{@$index_column_names}= split /\0/, $index;
         @record{keys %$data}= values %$data;
 
         @column_names{keys %record}= (1) x keys %record;
