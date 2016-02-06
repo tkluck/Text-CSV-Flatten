@@ -132,6 +132,13 @@ sub _recurse_pattern {
                     my ($key, $value)= @_;
                     _recurse_pattern($self, $value, \@p, [@$column_name_prefix, $key], $index_prefix);
                 } $cur_data;
+            } elsif($p =~ /^{(.*)}$/) {
+                my @keys= split ',', $1;
+                for my $key (@keys) {
+                    if(exists $cur_data->{$key}) {
+                        _recurse_pattern($self, $cur_data->{$key}, \@p, [@$column_name_prefix, $key], $index_prefix);
+                    }
+                }
             } elsif($p =~ /^<(.*)>$/) {
                 _foreach {
                     my ($key, $value)= @_;

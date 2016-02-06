@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 15;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -77,4 +77,29 @@ is(Text::CSV::Flatten->new('.nonexistent_key', column_name=>"value", data=>$empt
 CSV
 
 is(Text::CSV::Flatten->new('.nonexistent_key.nested', data=>$empty_data)->csv, <<CSV);
+CSV
+
+is(Text::CSV::Flatten->new('.calculus.Newton.<event>.<what>', column_name=>"value", data=>$data)->csv . "\n", <<CSV);
+event,value,what
+birth,12,month
+birth,1642,year
+death,3,month
+death,1726,year
+CSV
+
+is(Text::CSV::Flatten->new('.calculus.Newton.<event>.year', column_name=>"year", data=>$data)->csv . "\n", <<CSV);
+event,year
+birth,1642
+death,1726
+CSV
+
+is(Text::CSV::Flatten->new('.calculus.Newton.<event>.{year}', data=>$data)->csv . "\n", <<CSV);
+event,year
+birth,1642
+death,1726
+CSV
+
+is(Text::CSV::Flatten->new('.calculus.{Newton,Leibniz}.birth.year', data=>$data)->csv . "\n", <<CSV);
+Leibniz,Newton
+1646,1642
 CSV
