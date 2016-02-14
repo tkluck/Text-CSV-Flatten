@@ -230,7 +230,78 @@ readable, user-specified pattern.
 
 =head1 DESCRIPTION
 
-Some documentation wil come here.
+This module transforms hierarchical data (nested arrays/hashes) to
+comma-separated value (csv) output according to a compact, readable,
+user-specified pattern.
+
+For example, the pattern C<< .<index>.* >> transforms a data structure
+of the form
+
+    [{ a => 1, b => 2 }, { a => 3, b => 4 }]
+
+to the CSV output
+
+    a,b,index
+    1,2,0
+    3,4,1
+
+The pattern C<.*.*> applied to the same data gives the output
+
+    0_a,0_b,1_a,1_b
+    1,2,3,4
+
+The pattern C<< .*.<key> >> gives the output
+
+    0,1,key
+    1,3,a
+    2,4,b
+
+It is hoped that the pattern specification is sufficiently powerful for this
+module to replace a lot of simple boiler-plate data transformations.
+
+=head1 PATTERN SPECIFICATION
+
+The dot-separated components represent the following:
+
+=over
+
+=item
+
+C<< <name> >> represents that the keys at that position should be put in a
+column named name in the csv output. This column will be considered a primary
+key, and the values belonging to those keys become rows;
+
+=item
+
+C<*> represents that the keys at that position in the pattern should be
+interpreted as column names; their values should be the values for that column,
+all beloning to the same row;
+
+=item
+
+C<{column_name}> or C<{column_name_1,column_name_2,...}> is similar to C<*>,
+but instead of capturing all the keys at that level of the hierarchy, it only
+captures the named columns.
+
+=item
+
+anything else represents a literal key name.
+
+=item
+
+If your pattern does not contain C<*> or C<{...}>, you need to pass an
+additional C<< column_name => >> parameter to the constructor to specify the
+name for the single column where the value will go.
+
+=back
+
+For the purposes of this description, an array should be seen as a collection
+of index => value pairs.
+
+It is possible to specify several dot-separated paths in a single pattern,
+separated by spaces. In that case, all the paths need to have the same primary
+key (that is, the same set of names in C<< <...> >>). Rows will be formed by
+joining the columns resulting from the different paths.
 
 =head1 SEE ALSO
 
