@@ -4,7 +4,7 @@ use v5.014;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use JSON qw/ encode_json /;
 use Text::CSV;
