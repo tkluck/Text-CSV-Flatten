@@ -4,6 +4,7 @@ WriteMakefile(
     NAME              => 'Text::CSV::Flatten',
     VERSION_FROM      => 'lib/Text/CSV/Flatten.pm',
     PREREQ_PM         => {
+        'JSON'      => '2.19',
         'Text::CSV' => '1.32',
     },
     ABSTRACT_FROM     => 'lib/Text/CSV/Flatten.pm',
