@@ -99,9 +99,11 @@ sub csv {
     for my $index (sort keys %$data_matrix) {
         my $data= $data_matrix->{$index};
         my %record;
-        @record{@$index_column_names}= split /\0/, $index;
-        @record{keys %$data}= values %$data;
-
+        @record{@$index_column_names}= _deserialize_tuple($index);
+        for my $column_key (keys %$data) {
+            my $friendly_column_name= join "_", _deserialize_tuple($column_key);
+            $record{$friendly_column_name}= $data->{$column_key};
+        }
         @column_names{keys %record}= (1) x keys %record;
 
         push @records, \%record;
@@ -154,6 +156,14 @@ sub _foreach(&$) {
     }
 }
 
+sub _serialize_tuple {
+    return pack "(S/a)*", @_;
+}
+
+sub _deserialize_tuple {
+    return unpack "(S/a)*", $_[0];
+}
+
 sub _recurse_pattern {
     my ($self, $cur_data, $pattern, $column_name_prefix, $index_prefix)= @_;
 
@@ -202,10 +212,8 @@ sub _recurse_pattern {
         my $cell_value= ref $cur_data
                       ? encode_json($cur_data)
                       : $cur_data;
-        my $column_name= @$column_name_prefix
-                       ? join("_", @$column_name_prefix)
-                       : $self->{_default_column_name} || '';
-        $self->{data_matrix}{join("\0", @$index_prefix)}{$column_name}= $cell_value;
+        my @column_tuple= @$column_name_prefix ? @$column_name_prefix : ($self->{_default_column_name} || '');
+        $self->{data_matrix}{_serialize_tuple(@$index_prefix)}{_serialize_tuple(@column_tuple)}= $cell_value;
     }
 }
 

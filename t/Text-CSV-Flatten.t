@@ -41,8 +41,8 @@ my $data= {
 
 is(Text::CSV::Flatten->new('.calculus.<name>.*.year', data=>$data)->csv . "\n", <<CSV);
 birth,death,name
-1646,1716,Leibniz
 1642,1726,Newton
+1646,1716,Leibniz
 CSV
 
 is(Text::CSV::Flatten->new('.calculus.*.<event>.year', data=>$data)->csv . "\n", <<CSV);
@@ -53,8 +53,8 @@ CSV
 
 is(Text::CSV::Flatten->new('.calculus.<name>.*.*', data=>$data)->csv . "\n", <<CSV);
 birth_month,birth_year,death_month,death_year,name
-6,1646,11,1716,Leibniz
 12,1642,3,1726,Newton
+6,1646,11,1716,Leibniz
 CSV
 
 is(Text::CSV::Flatten->new('.', data=>$value)->csv . "\n", <<CSV);
@@ -85,10 +85,10 @@ CSV
 
 is(Text::CSV::Flatten->new('.calculus.Newton.<event>.<what>', column_name=>"value", data=>$data)->csv . "\n", <<CSV);
 event,value,what
-birth,12,month
 birth,1642,year
-death,3,month
+birth,12,month
 death,1726,year
+death,3,month
 CSV
 
 is(Text::CSV::Flatten->new('.calculus.Newton.<event>.year', column_name=>"year", data=>$data)->csv . "\n", <<CSV);
@@ -110,12 +110,12 @@ CSV
 
 is(Text::CSV::Flatten->new('.calculus.<who>.birth.{year} .calculus.<who>.birth.{month}', data=>$data)->csv . "\n", <<CSV);
 month,who,year
-6,Leibniz,1646
 12,Newton,1642
+6,Leibniz,1646
 CSV
 
 is(Text::CSV::Flatten->new('.calculus.<who>.*.year .calculus.<who>.nationality .calculus.<who>.apple', column_name=>[qw/nationality apple/], data=>$data)->csv . "\n", <<CSV);
 apple,birth,death,nationality,who
-no,1646,1716,German,Leibniz
 yes,1642,1726,English,Newton
+no,1646,1716,German,Leibniz
 CSV
