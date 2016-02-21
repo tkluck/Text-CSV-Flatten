@@ -135,6 +135,8 @@ sub csv {
     return join "\n", @result;
 }
 
+# utility function to iterate over key => value pairs with the added
+# bonus that it also works for arrays
 sub _foreach(&$) {
     my ($codeblock, $it)= @_;
 
