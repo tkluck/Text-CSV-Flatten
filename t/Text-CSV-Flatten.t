@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -118,4 +118,13 @@ is(Text::CSV::Flatten->new('.calculus.<who>.*.year .calculus.<who>.nationality .
 apple,birth,death,nationality,who
 yes,1642,1726,English,Newton
 no,1646,1716,German,Leibniz
+CSV
+
+is(Text::CSV::Flatten->new('.<index>', column_name=>"value", data=>[1..5])->csv . "\n", ,<<CSV);
+index,value
+0,1
+1,2
+2,3
+3,4
+4,5
 CSV
