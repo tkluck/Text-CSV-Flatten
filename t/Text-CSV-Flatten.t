@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 21;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -138,4 +138,10 @@ CSV
 is(Text::CSV::Flatten->new('.string_with_quotes', column_name=>"value", data=>{ string_with_quotes => '"Run!" he said'})->csv . "\n", ,<<CSV);
 value
 """Run!"" he said"
+CSV
+
+# false data
+is(Text::CSV::Flatten->new('.false_data', column_name=>"value", data=>{ false_data => 0})->csv . "\n", ,<<CSV);
+value
+0
 CSV

@@ -182,12 +182,10 @@ sub _recurse_pattern {
                 for my $key (@keys) {
                     my $recurse_data;
                     if(ref $cur_data eq 'HASH' && exists $cur_data->{$key}) {
-                        $recurse_data= $cur_data->{$key};
-                    } elsif(ref $cur_data eq 'ARRAY') {
-                        $recurse_data= $cur_data->[$key];
+                        _recurse_pattern($self, $cur_data->{$key}, \@p, [@$column_name_prefix, $key], $index_prefix)
+                    } elsif(ref $cur_data eq 'ARRAY' && exists $cur_data->[$key]) {
+                        _recurse_pattern($self, $cur_data->[$key], \@p, [@$column_name_prefix, $key], $index_prefix)
                     }
-                    _recurse_pattern($self, $recurse_data, \@p, [@$column_name_prefix, $key], $index_prefix)
-                        if $recurse_data;
                 }
             } elsif($p =~ /^<(.*)>$/) {
                 _foreach {
@@ -195,14 +193,11 @@ sub _recurse_pattern {
                     _recurse_pattern($self, $value, \@p, $column_name_prefix, [@$index_prefix, $key]);
                 } $cur_data;
             } else {
-                my $recurse_data;
                 if(ref $cur_data eq 'HASH' && exists $cur_data->{$p}) {
-                    $recurse_data= $cur_data->{$p};
-                } elsif(ref $cur_data eq 'ARRAY') {
-                    $recurse_data= $cur_data->[$p];
+                    _recurse_pattern($self, $cur_data->{$p}, \@p, $column_name_prefix, $index_prefix)
+                } elsif(ref $cur_data eq 'ARRAY' && exists $cur_data->[$p]) {
+                    _recurse_pattern($self, $cur_data->[$p], \@p, $column_name_prefix, $index_prefix)
                 }
-                _recurse_pattern($self, $recurse_data, \@p, $column_name_prefix, $index_prefix)
-                    if $recurse_data;
             }
             1;
         } or do {
