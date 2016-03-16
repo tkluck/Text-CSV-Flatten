@@ -111,7 +111,7 @@ sub csv {
     my @column_names= sort keys %column_names;
     my $render_header= scalar grep $_, @column_names;
 
-    my $csv= Text::CSV->new();
+    my $csv= Text::CSV->new({binary => 1});
 
     my @result;
     if($render_header) {
