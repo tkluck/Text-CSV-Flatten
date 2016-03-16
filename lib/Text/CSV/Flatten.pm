@@ -4,7 +4,7 @@ use v5.014;
 use strict;
 use warnings;
 
-our $VERSION = '0.03git';
+our $VERSION = '0.03';
 
 use JSON qw/ encode_json /;
 use Text::CSV;
