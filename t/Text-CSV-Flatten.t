@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 22;
 BEGIN { use_ok('Text::CSV::Flatten') };
 
 #########################
@@ -144,4 +144,15 @@ CSV
 is(Text::CSV::Flatten->new('.false_data', column_name=>"value", data=>{ false_data => 0})->csv . "\n", ,<<CSV);
 value
 0
+CSV
+
+my $jagged_data= {
+    1 => { b => 3, c => 4, d => 5 },
+    2 => { b => 6, d => 7 }
+};
+
+is(Text::CSV::Flatten->new('.<a>.*', data=>$jagged_data)->csv . "\n", ,<<CSV);
+a,b,c,d
+1,3,4,5
+2,6,,7
 CSV
