@@ -1,5 +1,8 @@
 Revision history for Perl extension Text::CSV::Flatten.
 
+0.04  Wed Mar 16 18:23:00 CET 2016
+	- No-op version bump for packaging reasons
+
 0.03  Wed Mar 16 15:23:19 CET 2016
 	- Support 'binary' data in column output
 	- Proper serialization for internal hash keys that represent tuples

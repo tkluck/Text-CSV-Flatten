@@ -1,4 +1,4 @@
-Text-CSV-Flatten version 0.03
+Text-CSV-Flatten version 0.04
 =============================
 
 This module transforms hierarchical data (nested arrays/hashes) to
